@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import GradeBadge from "@/components/GradeBadge";
 import PageHeader from "@/components/PageHeader";
+import ShareButton from "@/components/ShareButton";
 import { getBuyer } from "@/lib/buyers";
 import { int, pct, usd } from "@/lib/format";
 
@@ -46,6 +47,12 @@ export default async function Page({ params }: Props) {
         title={buyer.name}
         asof="2026-09-30 · (가상) 합성 데이터"
         line={`${buyer.id} · ${buyer.countryKo} · ${buyer.region}`}
+      />
+
+      <ShareButton
+        title={`${buyer.id} · ${buyer.name}`}
+        text={`${buyer.id} · ${buyer.name} · ${buyer.countryKo} · ${buyer.grade}등급 · 위험 점수 ${pct(buyer.pd30d)}`}
+        path={`/buyers/${buyer.id}`}
       />
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
