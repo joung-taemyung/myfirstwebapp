@@ -3,10 +3,12 @@ import DeployBadge from "@/components/DeployBadge";
 import KpiCard from "@/components/KpiCard";
 import Notice from "@/components/Notice";
 import PageHeader from "@/components/PageHeader";
+import QuestBoard from "@/components/QuestBoard";
 import { StatusBadge } from "@/components/ReviewForm";
 import { getBuyers } from "@/lib/buyers";
 import { int, kst, pct, usd } from "@/lib/format";
-import { getRecentReviews } from "@/lib/reviews";
+import { filterByGrade } from "@/lib/metrics";
+import { getLatestStatuses, getRecentReviews } from "@/lib/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,13 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const buyers = await getBuyers();
   const recent = await getRecentReviews(5);
+
+  // C등급 확인 퀘스트 — 등급은 grade 칸 그대로, 위험 점수 큰 순(filterByGrade)
+  const cBuyers = filterByGrade(buyers, "C");
+  const latest = await getLatestStatuses(cBuyers.map((b) => b.id));
+  const questDone = cBuyers.filter((b) => latest.get(b.id) === "확인 완료").length;
+  const questUnseen = cBuyers.filter((b) => !latest.has(b.id)).map((b) => ({ id: b.id, name: b.name }));
+  const questInProgress = cBuyers.length - questDone - questUnseen.length;
   const total = buyers.length;
   const gradeC = buyers.filter((b) => b.grade === "C");
   const arAll = buyers.reduce((sum, b) => sum + b.openArUsd, 0);
@@ -37,6 +46,13 @@ export default async function Home() {
         휴대폰으로도 같은 주소를 열어 보세요. 아래 배지가 <span className="num">production · 커밋 7자리 · icn1</span>이면
         Vercel 서버(서울)에서 도는 중이고, <span className="num">내 PC · development</span>이면 내 PC에서 도는 중입니다.
       </Notice>
+
+      <QuestBoard
+        total={cBuyers.length}
+        done={questDone}
+        inProgress={questInProgress}
+        unseen={questUnseen}
+      />
 
       <section aria-labelledby="recent-reviews" className="space-y-3">
         <h2 id="recent-reviews" className="text-lg font-semibold text-ink">
