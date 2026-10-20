@@ -8,6 +8,8 @@ import { getBuyers, type Buyer } from "@/lib/buyers";
 import { int, pct, usd } from "@/lib/format";
 import { byRegion, filterByGrade, gradeCounts, isGrade, kpis, topRisk } from "@/lib/metrics";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "바이어" };
 
 // 바이어 목록 — KPI · 위험 상위 10 · 지역별은 언제나 전체 기준, 등급 칩(?grade=)은 '전체 목록'만 거른다.

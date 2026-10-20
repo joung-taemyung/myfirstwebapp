@@ -1,6 +1,6 @@
-import raw from "@/data/buyers.json";
+import { db } from "@/lib/db";
 
-// 바이어 데이터 읽기. 지금은 data/buyers.json을 돌려주고, 5일차에 DB로 바꿀 때 아래 두 함수의 속만 바뀐다.
+// 바이어 데이터 읽기. 금고(DB)의 Buyer 표에서 읽는다 — 서버 코드에서만 부른다.
 
 export type Grade = "S" | "A" | "B" | "C";
 
@@ -26,13 +26,16 @@ export type Buyer = {
   signals: string[];
 };
 
-const BUYERS = raw as Buyer[];
+// DB의 grade 칸은 글자(string)라 Grade 형으로 맞춘다
+type Row = Omit<Buyer, "grade"> & { grade: string };
+const toBuyer = (row: Row): Buyer => ({ ...row, grade: row.grade as Grade });
 
 export async function getBuyers(): Promise<Buyer[]> {
-  return BUYERS;
+  const rows = await db().buyer.findMany({ orderBy: { id: "asc" } });
+  return rows.map(toBuyer);
 }
 
 export async function getBuyer(id: string): Promise<Buyer | null> {
-  const key = id.trim().toUpperCase();
-  return BUYERS.find((b) => b.id === key) ?? null;
+  const row = await db().buyer.findUnique({ where: { id: id.trim().toUpperCase() } });
+  return row ? toBuyer(row) : null;
 }
